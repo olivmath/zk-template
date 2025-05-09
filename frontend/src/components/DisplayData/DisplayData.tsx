@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cell, Checkbox, Section } from "@telegram-apps/telegram-ui";
 import type { FC, ReactNode } from "react";
 import { Link } from "@/components/Link/Link";
 import { bem } from "@/css/bem";
 
 import "./DisplayData.css";
+import { generateProof } from "../services/noir/proofGeneration";
 
 const [, e] = bem("display-data");
 
@@ -20,16 +21,51 @@ export interface DisplayDataProps {
 }
 
 export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => {
-  const [birthDate, setBirthDate] = useState("");
-  const [proofType, setProofType] = useState("risc0");
+  const [birthDate, setBirthDate] = useState("1997-04-30");
+  const [proofType, setProofType] = useState("noir");
+  const [logs, setLogs] = useState<string[]>([]);
+  const [result, setResult] = useState<string | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  const addLog = (msg: string) => setLogs([msg]);
 
   const handleGenerateProof = () => {
-    console.log("Generating proof with:", { birthDate, proofType });
-    // Lógica de geração de prova pode ser chamada aqui
+    setResult(null);
+    setLogs([]);
+    setElapsedTime(0);
+    startTimeRef.current = performance.now();
+
+    const timer = setInterval(() => {
+      if (startTimeRef.current) {
+        const now = performance.now();
+        setElapsedTime(now - startTimeRef.current);
+      }
+    }, 100);
+    setIntervalId(timer);
+
+    if (proofType === "noir") {
+      const year = new Date(birthDate).getFullYear();
+      generateProof(year, addLog, setResult, () => {
+        if (startTimeRef.current) {
+          const total = performance.now() - startTimeRef.current;
+          setElapsedTime(total);
+          clearInterval(timer);
+        }
+      });
+    } else if (proofType === "circom") {
+      alert("Circom Proof generated successfully!");
+    } else if (proofType === "risc0") {
+      alert("Risc0 Proof generated successfully!");
+    }
   };
 
   return (
     <>
+      <Section header={`Logs (${elapsedTime.toFixed(0)} ms)`}>
+        <Cell>{logs}</Cell>
+      </Section>
       <Section header="Proof of Birth">
         <Cell className={e("line")} subhead="Your birth date" multiline>
           <input
