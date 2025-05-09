@@ -24,15 +24,20 @@ export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => {
   const [birthDate, setBirthDate] = useState("1997-04-30");
   const [proofType, setProofType] = useState("noir");
   const [logs, setLogs] = useState<string[]>([]);
-  const [result, setResult] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  const addLog = (msg: string) => setLogs([msg]);
+  const addLog = (tag: boolean, msg: string) => {
+    if (tag) {
+      console.log(msg);
+    } else {
+      setLogs([msg]);
+      console.log(msg);
+    }
+  };
 
   const handleGenerateProof = () => {
-    setResult(null);
     setLogs([]);
     setElapsedTime(0);
     startTimeRef.current = performance.now();
@@ -47,7 +52,7 @@ export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => {
 
     if (proofType === "noir") {
       const year = new Date(birthDate).getFullYear();
-      generateProof(year, addLog, setResult, () => {
+      generateProof(year, addLog, () => {
         if (startTimeRef.current) {
           const total = performance.now() - startTimeRef.current;
           setElapsedTime(total);

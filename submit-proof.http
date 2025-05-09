@@ -1,0 +1,8 @@
+POST http://localhost:3000/api/submit-proof
+content-type: application/json
+
+{
+    "proofHex": "sample",
+    "publicInputs": "rrrrr", 
+    "vkHex": "234234234"
+}
