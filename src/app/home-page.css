@@ -1,0 +1,12 @@
+.home-page__placeholder {
+  padding: 20px;
+  text-align: center;
+}
+
+.home-page__button {
+  margin-top: 16px;
+}
+
+.home-page__button-connected {
+  margin: 8px 16px;
+}

@@ -1,62 +1,53 @@
 'use client';
 
-import { Section, Cell, Image, List } from '@telegram-apps/telegram-ui';
-import { useTranslations } from 'next-intl';
+import { TonConnectButton, useTonWallet } from '@tonconnect/ui-react';
+import { List, Placeholder, Section } from '@telegram-apps/telegram-ui';
+import { initDataState as _initDataState, useSignal } from '@telegram-apps/sdk-react';
 
-import { Link } from '@/components/Link/Link';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher/LocaleSwitcher';
 import { Page } from '@/components/Page';
+import { DisplayData } from '@/components/DisplayData/DisplayData';
+import { bem } from '@/css/bem';
 
-import tonSvg from './_assets/ton.svg';
+import './home-page.css';
+
+const [, e] = bem('home-page');
 
 export default function Home() {
-  const t = useTranslations('i18n');
+  const wallet = useTonWallet();
+  const initDataState = useSignal(_initDataState);
+
+  if (!wallet) {
+    return (
+      <Page back={false}>
+        <Placeholder
+          className={e('placeholder')}
+          header="Connect Wallet"
+          description={
+            <TonConnectButton className={e('button')} />
+          }
+        />
+      </Page>
+    );
+  }
 
   return (
     <Page back={false}>
       <List>
-        <Section
-          header="Features"
-          footer="You can use these pages to learn more about features, provided by Telegram Mini Apps and other useful projects"
-        >
-          <Link href="/ton-connect">
-            <Cell
-              before={
-                <Image
-                  src={tonSvg.src}
-                  style={{ backgroundColor: '#007AFF' }}
-                  alt="TON Logo"
-                />
-              }
-              subtitle="Connect your TON wallet"
-            >
-              TON Connect
-            </Cell>
-          </Link>
+        <Section header="Wallet Status">
+          <TonConnectButton className={e('button-connected')} />
         </Section>
-        <Section
-          header="Application Launch Data"
-          footer="These pages help developer to learn more about current launch information"
-        >
-          <Link href="/init-data">
-            <Cell subtitle="User data, chat information, technical data">
-              Init Data
-            </Cell>
-          </Link>
-          <Link href="/launch-params">
-            <Cell subtitle="Platform identifier, Mini Apps version, etc.">
-              Launch Parameters
-            </Cell>
-          </Link>
-          <Link href="/theme-params">
-            <Cell subtitle="Telegram application palette information">
-              Theme Parameters
-            </Cell>
-          </Link>
-        </Section>
-        <Section header={t('header')} footer={t('footer')}>
-          <LocaleSwitcher />
-        </Section>
+        {initDataState && (
+          <DisplayData
+            header="Init Data"
+            rows={[
+              { title: 'User ID', value: initDataState.user?.id },
+              { title: 'Username', value: initDataState.user?.username },
+              { title: 'First Name', value: initDataState.user?.first_name },
+              { title: 'Last Name', value: initDataState.user?.last_name },
+              { title: 'Language Code', value: initDataState.user?.language_code },
+            ].filter(row => row.value !== undefined)}
+          />
+        )}
       </List>
     </Page>
   );
