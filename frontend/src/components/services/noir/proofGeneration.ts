@@ -3,9 +3,8 @@
  * @module proofGeneration
  */
 
-import { UltraHonkBackend } from "@aztec/bb.js";
+import { UltraPlonkBackend } from "@aztec/bb.js";
 import { Noir } from "@noir-lang/noir_js";
-
 
 /**
  * Gera e verifica uma prova de conhecimento zero para um ano de nascimento.
@@ -21,9 +20,8 @@ export const generateProof = async (birthYear, logFn, onFinish) => {
     const circuit = await res.json();
 
     const noir = new Noir(circuit);
-    const backend = new UltraHonkBackend(circuit.bytecode);
+    const backend = new UltraPlonkBackend(circuit.bytecode);
     logFn?.(false, "Sessão configurada... ✅");
-
 
     // Geração de testemunha e prova
     logFn?.(false, "Gerando testemunha... ⏳");
@@ -37,21 +35,21 @@ export const generateProof = async (birthYear, logFn, onFinish) => {
     const { proof, publicInputs } = await backend.generateProof(witness);
     logFn?.(false, "Prova gerada... ✅");
 
-
     // Verificação local da prova
     logFn?.(false, "Verificando prova localmente... ⌛");
     const isValid = await backend.verifyProof({ proof, publicInputs });
     logFn?.(false, `Prova é ${isValid ? "válida" : "inválida"} ✅`);
 
-
     // Conversão para formato hexadecimal
     const vk = await backend.getVerificationKey();
     const proofHex = "0x" + Buffer.from(proof).toString("hex");
-    const vkHex = "0x" + Buffer.from(vk).toString("hex");
+    // const vkHex = Buffer.from(vk).toString("hex");
+    const vkHex = "0x" + Array.from(vk)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
 
     logFn?.(true, `Prova em hex: ${proofHex}`);
     logFn?.(true, `Chave de verificação: ${vkHex}`);
-
 
     // Submissão da prova
     fetch("/api/submit-proof", {

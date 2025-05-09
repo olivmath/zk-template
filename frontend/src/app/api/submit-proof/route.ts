@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     // Parse JSON
     const body = JSON.parse(rawBody);
-    console.log(body);
+    // console.log(body);
     const { proofHex, publicInputs, vkHex } = body;
 
     if (!proofHex || !publicInputs || !vkHex) {
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    
     const logs: string[] = [];
     await submitProofToZkVerify(proofHex, publicInputs, vkHex, (msg) => {
       logs.push(msg);
