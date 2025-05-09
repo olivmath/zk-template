@@ -1,12 +1,32 @@
 .home-page__placeholder {
-  padding: 20px;
+  padding: 16px;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .home-page__button {
-  margin-top: 16px;
+  width: 100%;
+  max-width: 300px;
+  margin: 16px auto;
 }
 
 .home-page__button-connected {
-  margin: 8px 16px;
+  margin: 8px;
+  width: auto;
+  margin-left: auto;
+  display: block;
+}
+
+.home-page__button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background-color: var(--tg-theme-bg-color, #fff);
 }

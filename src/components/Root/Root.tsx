@@ -1,8 +1,7 @@
 "use client";
 
-import { type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren } from "react";
 import {
-  initData,
   miniApp,
   useLaunchParams,
   useSignal,
@@ -13,20 +12,12 @@ import { AppRoot } from "@telegram-apps/telegram-ui";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorPage } from "@/components/ErrorPage";
 import { useDidMount } from "@/hooks/useDidMount";
-import { setLocale } from "@/core/i18n/locale";
 
 import "./styles.css";
 
 function RootInner({ children }: PropsWithChildren) {
   const lp = useLaunchParams();
-
   const isDark = useSignal(miniApp.isDark);
-  const initDataUser = useSignal(initData.user);
-
-  // Set the user locale.
-  useEffect(() => {
-    initDataUser && setLocale(initDataUser.language_code);
-  }, [initDataUser]);
 
   return (
     <TonConnectUIProvider manifestUrl="https://yellow-accused-earwig-831.mypinata.cloud/ipfs/bafkreif37arloqkzd76trz7edg534v26vqmd4ykxuwibgdelwr3m3xvbty">

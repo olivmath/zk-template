@@ -21,9 +21,11 @@ export default function Home() {
       <Page back={false}>
         <Placeholder
           className={e('placeholder')}
-          header="Connect Wallet"
+          header="O Grande Código"
           description={
-            <TonConnectButton className={e('button')} />
+            <div className={e('button-container')}>
+              <TonConnectButton className={e('button')} />
+            </div>
           }
         />
       </Page>
