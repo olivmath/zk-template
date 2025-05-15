@@ -1,34 +1,67 @@
-export const generateProof = async (
-  birth_year: number,
-  logFn?: (msg: string) => void,
-  resultFn?: (proof: string) => void,
-  onFinish?: () => void
-) => {
+/**
+ * Gera e verifica uma prova de conhecimento zero para um ano de nascimento.
+ * @module proofGeneration
+ */
+
+import { UltraPlonkBackend } from "@aztec/bb.js";
+import { Noir } from "@noir-lang/noir_js";
+
+/**
+ * Gera e verifica uma prova de conhecimento zero para um ano de nascimento.
+ * @param birthYear - Ano de nascimento para provar.
+ * @param logFn - Função opcional para logar progresso.
+ * @param onFinish - Callback opcional quando o processo completa ou falha.
+ */
+export const generateProof = async (birthYear, logFn, onFinish) => {
   try {
-    const { UltraPlonkBackend } = await import("@aztec/bb.js");
-    const { Noir } = await import("@noir-lang/noir_js");
+    // Configuração inicial
+    logFn?.(false, "Configurando sessão... ⏳");
     const res = await fetch("/circuit.json");
     const circuit = await res.json();
 
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
+    logFn?.(false, "Sessão configurada... ✅");
 
-    logFn?.("Generating witness... ⏳");
-    const { witness } = await noir.execute({ birth_year, current_year: 2025 });
-    logFn?.("Generated witness... ✅");
+    // Geração de testemunha e prova
+    logFn?.(false, "Gerando testemunha... ⏳");
+    const { witness } = await noir.execute({
+      birth_year: birthYear,
+      current_year: 2025,
+    });
+    logFn?.(false, "Testemunha gerada... ✅");
 
-    logFn?.("Generating proof... ⏳");
-    const { proof, publicInputs} = await backend.generateProof(witness);
-    logFn?.("Generated proof... ✅");
-    resultFn?.(proof);
+    logFn?.(false, "Gerando prova... ⏳");
+    const { proof, publicInputs } = await backend.generateProof(witness);
+    logFn?.(false, "Prova gerada... ✅");
 
-    logFn?.("Verifying proof... ⌛");
-    const isValid = await backend.verifyProof(proof);
-    logFn?.(`Proof is ${isValid ? "valid" : "invalid"} ✅`);
+    // Verificação local da prova
+    logFn?.(false, "Verificando prova localmente... ⌛");
+    const isValid = await backend.verifyProof({ proof, publicInputs });
+    logFn?.(false, `Prova é ${isValid ? "válida" : "inválida"} ✅`);
+
+    // Conversão para formato hexadecimal
+    const vk = await backend.getVerificationKey();
+    const proofHex = "0x" + Buffer.from(proof).toString("hex");
+    // const vkHex = Buffer.from(vk).toString("hex");
+    const vkHex = "0x" + Array.from(vk)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+
+    logFn?.(true, `Prova em hex: ${proofHex}`);
+    logFn?.(true, `Chave de verificação: ${vkHex}`);
+
+    // Submissão da prova
+    fetch("/api/submit-proof", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ proofHex, publicInputs, vkHex }),
+    });
+
     onFinish?.();
   } catch (err) {
-    logFn?.("Error generating proof 💔");
-    console.error(err);
+    logFn?.(false, "Erro ao gerar prova 💔");
+    console.error("Falha na geração da prova:", err);
     onFinish?.();
   }
 };
